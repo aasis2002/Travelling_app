@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    #destination-form {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #result-container {
+      margin: 2rem auto;
+      max-width: 600px;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #location-error {
+      color: red;
+    }
+
+    #recommendations {
+      margin-top: 1rem;
+    }
+
+    #places-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #places-list li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Travel App</h1>
+  </header>
+
+  <div id="destination-form">
+    <h2>Plan Your Trip</h2>
+    <label for="destination">Destination:</label>
+    <input type="text" id="destination" placeholder="Enter your destination">
+
+    <label for="date">Date:</label>
+    <input type="date" id="date">
+
+    <button onclick="planTrip()">Plan Trip</button>
+  </div>
+
+  <div id="result-container">
+    <h2>Your Trip Details</h2>
+    <p id="destination-result"></p>
+    <p id="date-result"></p>
+    <div id="recommendations">
+      <h3>Recommended Places Nearby</h3>
+      <ul id="places-list"></ul>
+      <p id="location-error"></p>
+    </div>
+  </div>
+
+  <script>
+    function planTrip() {
+      var destination = document.getElementById("destination").value;
+      var date = document.getElementById("date").value;
+
+      document.getElementById("destination-result").innerHTML = "Destination: " + destination;
+      document.getElementById("date-result").innerHTML = "Date: " + date;
+
+      // Call function to get recommendations based on real-time location
+      getRecommendations();
+    }
+
+    function getRecommendations() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+
+            // Use Google Places API for recommendations (replace with your API key)
+            var apiKey = 'YOUR_GOOGLE_PLACES_API_KEY';
+            var url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=5000&key=${apiKey}&types=hotel,museum,park`;
+
+            fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                displayRecommendations(data.results);
+              })
+              .catch(error => {
+                document.getElementById("location-error").innerHTML = "Error fetching recommendations: " + error.message;
+              });
+          },
+          function(error) {
+            document.getElementById("location-error").innerHTML = "Error getting location: " + error.message;
+          }
+        );
+      } else {
+        document.getElementById("location-error").innerHTML = "Geolocation is not supported by your browser";
+      }
+    }
+
+    function displayRecommendations(results) {
+      var placesList = document.getElementById("places-list");
+      placesList.innerHTML = "";
+
+      results.forEach(function(place) {
+        var listItem = document.createElement("li");
+        listItem.textContent = place.name;
+        placesList.appendChild(listItem);
+      });
+    }
+  </script>
+
+</body>
+</html>
